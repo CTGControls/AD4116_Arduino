@@ -48,28 +48,25 @@ void setup() {
 
 void loop() {
 
-  
-    uint16_t ID = AD4116_readID(CHIPSELECT05);
-    Serial.print("ID: ");
-    Serial.println(ID, HEX);
- /* 
-    uint8_t STATUS = AD4116_readStatus(CHIPSELECT05);
-    Serial.print("Status: ");
-    Serial.println(STATUS, BIN);
-    Serial.print("Ready: ");
-    Serial.println(BIT_CHECK(STATUS,7));
 
-    uint16_t GPOIConfig = AD4116_readGPOIConfig(CHIPSELECT05);
-    Serial.print("GPOIConfig: ");
-    Serial.println(STATUS, BIN);
-*/
+        uint16_t ID = AD4116_readID(CHIPSELECT05);
+        Serial.print("ID: ");
+        Serial.println(ID, HEX);
 
-    uint32_t ChannelOneOffset = AD4116_read24(CHIPSELECT05, B01110000);;
-    Serial.print("ChannelOneOffset: ");
-    Serial.println(ChannelOneOffset, BIN);
+        uint8_t STATUS = AD4116_readStatus(CHIPSELECT05);
+        Serial.print("Status: ");
+        Serial.println(STATUS, BIN);
+        Serial.print("Ready: ");
+        Serial.println(BIT_CHECK(STATUS,7));
+
+        uint16_t GPOIConfig = AD4116_readGPOIConfig(CHIPSELECT05);
+        Serial.print("GPOIConfig: ");
+        Serial.println(GPOIConfig, BIN);
 
 
-    Serial.println("Not Ready");
+        uint32_t ChannelOneOffset = AD4116_read24(CHIPSELECT05, B01110000);;
+        Serial.print("ChannelOneOffset: ");
+        Serial.println(ChannelOneOffset, BIN);
 
 
     Serial.println("___");
