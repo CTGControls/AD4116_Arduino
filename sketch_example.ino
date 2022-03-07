@@ -1,6 +1,7 @@
 #include <SPI.h>
-#include <Wire.h> 
+#include <Ethernet.h>
 #include <ArduinoMqttClient.h>
+#include <SD.h>
 
 #define DATAOUT 11 //COPI
 #define DATAIN  12 //CIPO
@@ -9,6 +10,8 @@
 #define CHIPSELECT09 9 //cs
 #define CHIPSELECT06 6 //cs
 #define CHIPSELECT05 5 //cs
+#define CHIPSELECT04 4 //cs
+
 
 /* a=target variable, b=bit number to act upon 0-n */
 #define BIT_SET(a,b) ((a) |= (1ULL<<(b)))
@@ -25,11 +28,32 @@
 #define BITMASK_CHECK_ALL(x, mask) (!(~(x) & (mask)))
 #define BITMASK_CHECK_ANY(x, mask) ((x) & (mask))
 
+byte mac[] = {
+  0xFB, 0xAE, 0x03, 0x36, 0xBC, 0x28
+};
+IPAddress ip(10, 40, 20, 93);
+IPAddress dns(10, 40, 20, 1);
+IPAddress gateway(10, 40, 20, 1);
+IPAddress subnet(255, 255, 254, 0);
+
+EthernetClass ethernet;
+EthernetServer server(80);
+
+SPISettings SPI_SETTING_AD4116(14000000, MSBFIRST, SPI_MODE3);
+SPISettings SPI_Settings_Network(14000000, MSBFIRST, SPI_MODE0);
 
 void setup() {
 
-  /* Main setting */
+    // Main setting 
     Serial.begin(19200);
+
+    // start the Ethernet connection and the server:
+    Ethernet.begin(mac, ip, dns, gateway, subnet);
+
+    // start the server
+    // server.begin();
+    Serial.print("server is at ");
+    Serial.println(Ethernet.localIP());
 
     pinMode(DATAOUT, OUTPUT);
     pinMode(DATAIN, INPUT);
@@ -48,30 +72,45 @@ void setup() {
 
 void loop() {
 
+    uint16_t ID = AD4116_readID(CHIPSELECT05);
+    Serial.print("ID: ");
+    Serial.println(ID, HEX);
 
-        uint16_t ID = AD4116_readID(CHIPSELECT05);
-        Serial.print("ID: ");
-        Serial.println(ID, HEX);
+    uint8_t STATUS = AD4116_readStatus(CHIPSELECT05);
+    Serial.print("Status: ");
+    Serial.println(STATUS, BIN);
+    Serial.print("Ready: ");
+    Serial.println(BIT_CHECK(STATUS,7));
 
-        uint8_t STATUS = AD4116_readStatus(CHIPSELECT05);
-        Serial.print("Status: ");
-        Serial.println(STATUS, BIN);
-        Serial.print("Ready: ");
-        Serial.println(BIT_CHECK(STATUS,7));
-
-        uint16_t GPOIConfig = AD4116_readGPOIConfig(CHIPSELECT05);
-        Serial.print("GPOIConfig: ");
-        Serial.println(GPOIConfig, BIN);
+    uint16_t GPOIConfig = AD4116_readGPOIConfig(CHIPSELECT05);
+    Serial.print("GPOIConfig: ");
+    Serial.println(GPOIConfig, BIN);
 
 
-        uint32_t ChannelOneOffset = AD4116_read24(CHIPSELECT05, B01110000);;
-        Serial.print("ChannelOneOffset: ");
-        Serial.println(ChannelOneOffset, BIN);
+    uint32_t ChannelOneOffset = AD4116_read24(CHIPSELECT05, B01110000);;
+    Serial.print("ChannelOneOffset: ");
+    Serial.println(ChannelOneOffset, BIN);
+
+    
+    // Grt IP ADDRESS
+    Serial.print("server is at ");
+    Serial.println(Ethernet.localIP());
 
 
     Serial.println("___");
-}   
+}
 
+
+/* Read Chip Address 0x00
+IPAddress ethernet_readIP(int ChipSelectPin)
+{
+    IPAddress ret;
+	SPI.beginTransaction(Network_SPI_Settings);
+	W5100.getIPAddress(ret.raw_address());
+	SPI.endTransaction();
+	return ret;
+}
+*/
 
 /* Read Chip Address 0x00*/
 uint8_t AD4116_readStatus(int ChipSelectPin)
@@ -122,14 +161,14 @@ uint8_t AD4116_read(uint8_t ChipSelectPin, uint8_t comms)
 
     pinMode(ChipSelectPin,OUTPUT);
     
-    delay(5);
+    delay(50);
     
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
-    delay(50);
+    delay(150);
 
     SPI.transfer(comms);
     uint8_t results = SPI.transfer(0x00);
@@ -145,14 +184,14 @@ uint16_t AD4116_read16(uint8_t ChipSelectPin, uint8_t comms)
 
     pinMode(ChipSelectPin,OUTPUT);
     
-    delay(5);
+    delay(50);
     
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
-    delay(50);
+    delay(150);
 
     SPI.transfer(comms);
     uint16_t results = SPI.transfer16(0x00);
@@ -167,14 +206,14 @@ uint32_t AD4116_read24(uint8_t ChipSelectPin, uint8_t comms)
 
     pinMode(ChipSelectPin,OUTPUT);
     
-    delay(5);
+    delay(50);
     
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
-    delay(50);
+    delay(150);
 
     SPI.transfer(comms);
     uint32_t resultsW1 = SPI.transfer(0x00);
@@ -188,19 +227,19 @@ uint32_t AD4116_read24(uint8_t ChipSelectPin, uint8_t comms)
 }
 
 
-uint8_t AD4116_write(int ChipSelectPin, byte comms)
+uint8_t AD4116_write(uint8_t ChipSelectPin, byte comms)
 {
 
     pinMode(ChipSelectPin,OUTPUT);
     
-    delay(5);
+    delay(50);
     
     SPI.setBitOrder(MSBFIRST);
     SPI.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
-    delay(50);
+    delay(150);
 
     SPI.transfer(comms);
     unsigned int results = SPI.transfer(0x00);
@@ -209,4 +248,21 @@ uint8_t AD4116_write(int ChipSelectPin, byte comms)
 
     return results;
 }
+
+
+uint8_t ethernetCheckConnection(uint8_t ChipSelectPin){
+
+    // Check for Ethernet hardware present
+    if (Ethernet.hardwareStatus() == EthernetNoHardware) {
+        Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
+        return 1;
+    }
+    if (Ethernet.linkStatus() != LinkON) {
+        Serial.println("Ethernet cable is not connected.");
+        return 2;
+    }
+
+  return 0;
+}
+
 
