@@ -1,22 +1,22 @@
 #include "AD4116_read.h"
-#include <SPI.h>
 
-uint8_t AD4116_read(uint8_t ChipSelectPin, uint8_t comms)
+
+uint8_t AD4116_read(SPIClass& spi, uint8_t ChipSelectPin, uint8_t comms)
 {
 
     pinMode(ChipSelectPin,OUTPUT);
     
     delay(50);
     
-    SPI.setBitOrder(MSBFIRST);
-    SPI.setDataMode(SPI_MODE3);
+    spi.setBitOrder(MSBFIRST);
+    spi.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
     delay(150);
 
-    SPI.transfer(comms);
-    uint8_t results = SPI.transfer(0x00);
+    spi.transfer(comms);
+    uint8_t results = spi.transfer(0x00);
     
     digitalWrite(ChipSelectPin,HIGH); //disable device
 
@@ -24,21 +24,21 @@ uint8_t AD4116_read(uint8_t ChipSelectPin, uint8_t comms)
 }
 
 
-uint16_t AD4116_read16(uint8_t ChipSelectPin, uint8_t comms)
+uint16_t AD4116_read16(SPIClass& spi, uint8_t ChipSelectPin, uint8_t comms)
 {
 
     pinMode(ChipSelectPin,OUTPUT);
     
     delay(50);
     
-    SPI.setBitOrder(MSBFIRST);
-    SPI.setDataMode(SPI_MODE3);
+    spi.setBitOrder(MSBFIRST);
+    spi.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
     delay(150);
 
-    SPI.transfer(comms);
+    spi.transfer(comms);
     uint16_t results = SPI.transfer16(0x00);
     
     digitalWrite(ChipSelectPin,HIGH); //disable device
@@ -46,24 +46,24 @@ uint16_t AD4116_read16(uint8_t ChipSelectPin, uint8_t comms)
     return results;
 }
 
-uint32_t AD4116_read24(uint8_t ChipSelectPin, uint8_t comms)
+uint32_t AD4116_read24(SPIClass& spi, uint8_t ChipSelectPin, uint8_t comms)
 {
 
     pinMode(ChipSelectPin,OUTPUT);
     
     delay(50);
     
-    SPI.setBitOrder(MSBFIRST);
-    SPI.setDataMode(SPI_MODE3);
+    spi.setBitOrder(MSBFIRST);
+    spi.setDataMode(SPI_MODE3);
     
     digitalWrite(ChipSelectPin,LOW); //enable device
 
     delay(150);
 
-    SPI.transfer(comms);
-    uint32_t resultsW1 = SPI.transfer(0x00);
-    uint32_t resultsW2 = SPI.transfer(0x00);
-    uint32_t resultsW3 = SPI.transfer(0x00);
+    spi.transfer(comms);
+    uint32_t resultsW1 = spi.transfer(0x00);
+    uint32_t resultsW2 = spi.transfer(0x00);
+    uint32_t resultsW3 = spi.transfer(0x00);
     
     digitalWrite(ChipSelectPin,HIGH); //disable device
 

@@ -1,5 +1,5 @@
 {
     "board": "arduino:avr:uno",
     "port": "COM4",
-    "sketch": "AD4116_Arduino.ino"
+    "sketch": "AD4116_Arduino_v2.ino"
 }
